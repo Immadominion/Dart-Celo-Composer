@@ -64,7 +64,13 @@ void main(List<String> arguments) async {
     await File(packageJsonPath).writeAsString(yamlWriter.write(packageJson));
 
     final gitDir = path.join(Directory.current.path, projectName, '.git');
-    await Directory(gitDir).delete(recursive: true);
+
+    spinner.stop();
+    print('${Emoji.byName('hundredPoints')} ${chalk.green(' Done!')}');
+    displayInstructions();
+    if (await Directory(gitDir).exists()) {
+      await Directory(gitDir).delete(recursive: true);
+    }
     await runCommand('git', ['init', '--quiet', '--initial-branch=main'],
         workingDirectory: path.join(Directory.current.path, projectName));
     await runCommand('git', ['add', '.'],
@@ -76,6 +82,7 @@ void main(List<String> arguments) async {
     print('${Emoji.byName('hundredPoints')} ${chalk.green(' Done!')}');
     displayInstructions();
   } catch (error) {
+    spinner.stop();
     print(error);
     print('Error generating project');
   }
