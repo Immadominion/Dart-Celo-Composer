@@ -87,7 +87,7 @@ The easiest way to start with Celo Composer Dart is using the CLI tool. This CLI
 - Step 1
 
 ```bash
-dart run bin/create.dart -n my_project_name
+dart run lib/commands/create.dart -n my_project_name
 ```
 
 - Step 2: Provide the Project Name: You will be prompted to enter the name of your project.

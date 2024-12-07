@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:args/args.dart';
-import 'package:celo_composer/utils/constant.dart';
+import 'package:emojis/emoji.dart';
 import 'package:path/path.dart' as path;
-import 'package:process_run/shell.dart';
 import 'package:chalkdart/chalk.dart';
 import 'package:prompts/prompts.dart' as prompts;
 import 'package:yaml/yaml.dart';
 import 'package:yaml_writer/yaml_writer.dart';
-import 'package:emojis/emoji.dart';
 import 'package:cli_spinner/cli_spinner.dart';
 
 void main(List<String> arguments) async {
@@ -39,16 +36,6 @@ void main(List<String> arguments) async {
       prompts.getBool('Do you want to use Hardhat?', defaultsTo: true);
   if (hardhatRequired) packages.add('hardhat');
 
-  final useTemplatePrompt =
-      prompts.getBool('Do you want to use a template?', defaultsTo: false);
-
-  String template = '';
-  if (useTemplatePrompt) {
-    template = prompts.choose('Which template do you want to use?',
-            ['Minipay', 'Valora', 'Social Connect'], defaultsTo: 'Minipay')
-        as String;
-  }
-
   final ownerName =
       prompts.get('Project Owner name: ', validate: (String input) {
     return input.trim().isNotEmpty;
@@ -62,50 +49,19 @@ void main(List<String> arguments) async {
     exit(1);
   }
 
-  final spinner = loading('Generating custom Celo Composer project...');
+  final spinner = loading('Generating custom Flutter project...');
   try {
-    if (template.isEmpty) {
-      await cloneRepo(baseUrl, projectName, pwd);
+    await copyPackagesDirectory(pwd, projectName);
 
-      final projectPackageJson = getProjectJson(projectName, ownerName);
+    final projectDir = path.join(pwd, projectName);
+    final packageJsonPath = path.join(projectDir, 'pubspec.yaml');
+    final packageData = await File(packageJsonPath).readAsString();
+    final packageJson = Map<String, dynamic>.from(loadYaml(packageData));
+    packageJson['name'] = projectName;
+    packageJson['author'] = ownerName;
 
-      for (final pkg in packages) {
-        final projectDir = path.join(pwd, projectName);
-        await sparseCheckout(projectDir, pkg);
-
-        final packagePath =
-            path.join(projectDir, 'packages', pkg, 'pubspec.yaml');
-        final localPackageYaml = await File(packagePath).readAsString();
-        final projectPackage = loadYaml(localPackageYaml) as Map;
-        projectPackage['name'] = '@$projectName/$pkg';
-        projectPackage['author'] = ownerName;
-
-        final yamlWriter = YAMLWriter();
-        await File(packagePath).writeAsString(yamlWriter.write(projectPackage));
-
-        for (final key in projectPackage['scripts'].keys) {
-          projectPackageJson['scripts']['${packageNameMap[pkg]}:$key'] =
-              'dart run @$projectName/$pkg $key';
-        }
-      }
-
-      final packageJsonContent = jsonEncode(projectPackageJson);
-      final packageJsonPath = path.join(projectName, 'pubspec.yaml');
-      await File(packageJsonPath).writeAsString(packageJsonContent);
-    } else {
-      final templateURL = getTemplateUrl(template);
-      await cloneRepo(templateURL, projectName, pwd);
-
-      final projectDir = path.join(pwd, projectName);
-      final packageJsonPath = path.join(projectDir, 'pubspec.yaml');
-      final packageData = await File(packageJsonPath).readAsString();
-      final packageJson = loadYaml(packageData) as Map;
-      packageJson['name'] = projectName;
-      packageJson['author'] = ownerName;
-
-      final yamlWriter = YAMLWriter();
-      await File(packageJsonPath).writeAsString(yamlWriter.write(packageJson));
-    }
+    final yamlWriter = YAMLWriter();
+    await File(packageJsonPath).writeAsString(yamlWriter.write(packageJson));
 
     final gitDir = path.join(Directory.current.path, projectName, '.git');
     await Directory(gitDir).delete(recursive: true);
@@ -125,17 +81,6 @@ void main(List<String> arguments) async {
   }
 }
 
-Future<void> cloneRepo(String url, String projectName, String cwd) async {
-  final shell = Shell();
-  await shell
-      .run('git clone --depth 2 --filter=blob:none --sparse $url $projectName');
-}
-
-Future<void> sparseCheckout(String projectDir, String pkg) async {
-  final shell = Shell(workingDirectory: projectDir);
-  await shell.run('git sparse-checkout add packages/$pkg');
-}
-
 Future<void> runCommand(String command, List<String> arguments,
     {String? workingDirectory}) async {
   final result =
@@ -146,9 +91,31 @@ Future<void> runCommand(String command, List<String> arguments,
   }
 }
 
+Future<void> copyPackagesDirectory(String sourceDir, String projectName) async {
+  final sourcePackagesDir = path.join(sourceDir, 'packages/flutter_app');
+  final targetPackagesDir = path.join(sourceDir, projectName);
+
+  if (await Directory(sourcePackagesDir).exists()) {
+    await Directory(targetPackagesDir).create(recursive: true);
+    await for (var entity
+        in Directory(sourcePackagesDir).list(recursive: true)) {
+      if (entity is File) {
+        final newPath =
+            entity.path.replaceFirst(sourcePackagesDir, targetPackagesDir);
+        await File(newPath).create(recursive: true);
+        await entity.copy(newPath);
+      } else if (entity is Directory) {
+        final newPath =
+            entity.path.replaceFirst(sourcePackagesDir, targetPackagesDir);
+        await Directory(newPath).create(recursive: true);
+      }
+    }
+  }
+}
+
 void displayInstructions() {
   print(chalk.green
-      .bold('\n🚀 Your starter project has been successfully created!\n'));
+      .bold('\n🚀 Your Flutter project has been successfully created!\n'));
 
   print(
       chalk.bold('Before you start the project, please follow these steps:\n'));
