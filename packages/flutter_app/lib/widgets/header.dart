@@ -26,20 +26,6 @@ class _HeaderState extends State<Header> with WidgetsBindingObserver {
     return AppBar(
       title: const Text('Celo Composer dApp'),
       actions: [
-        // if (!appProvider.isConnected)
-        //   IconButton(
-        //     icon: const Icon(Icons.account_balance_wallet),
-        //     onPressed: () {
-        //       appProvider.connectWallet();
-        //     },
-        //   ),
-        // if (appProvider.isConnected)
-        //   IconButton(
-        //     icon: const Icon(Icons.logout),
-        //     onPressed: () {
-        //       appProvider.disconnectWallet();
-        //     },
-        //   ),
         AppKitModalConnectButton(
           context: context,
           appKit: appProvider.appKitModal,
