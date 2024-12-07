@@ -84,40 +84,53 @@ Celo Composer Dart CLI is built on Celo to make it simple to build dApps using a
 
 The easiest way to start with Celo Composer Dart is using the CLI tool. This CLI tool lets you quickly start building dApps on Celo, including several templates. To get started, just run the following command, and follow the steps:
 
-- Step 1
+- Step 1: Clone the repository
+
+```bash
+git clone https://github.com/Immadominion/Dart-Celo-Composer.git
+```
+
+- Step 2: Change directory and install dependencies
+
+```bash
+cd Dart-Celo-Composer
+dart pub get
+```
+
+- Step 3: Run the CLI tool to create a new project
 
 ```bash
 dart run lib/commands/create.dart -n my_project_name
 ```
 
-- Step 2: Provide the Project Name: You will be prompted to enter the name of your project.
+- Step 4: Provide the Project Name: You will be prompted to enter the name of your project.
 
 ```text
 What is your project name:
 ```
 
-- Step 3: Choose to Use a Template: You will be asked if you want to use a template. Select `Yes` or `No`.
+- Step 5: Choose to Use a Template: You will be asked if you want to use a template. Select `Yes` or `No`.
 
 ```text
 Do you want to use a template? (Y/n)
 ```
 
-- Step 4: Select a Template: If you chose to use a template, you will be prompted to select a template from the list provided.
+- Step 6: Select a Template: If you chose to use a template, you will be prompted to select a template from the list provided.
 
 ```text
 - Minipay
 - Valora
 ```
 
-- Step 5: Provide the Project Owner's Name: You will be asked to enter the project owner's name.
+- Step 7: Provide the Project Owner's Name: You will be asked to enter the project owner's name.
 
 ```text
 Project Owner name:
 ```
 
-- Step 6: Wait for Project Creation: The CLI will now create the project based on your inputs. This may take a few minutes.
+- Step 8: Wait for Project Creation: The CLI will now create the project based on your inputs. This may take a few minutes.
 
-- Step 7: Follow the instructions to start the project. The same will be displayed on the console after the project is created.
+- Step 9: Follow the instructions to start the project. The same will be displayed on the console after the project is created.
 
 ```text
 🚀 Your starter project has been successfully created!
